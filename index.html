@@ -45,6 +45,8 @@ header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: 
 .tally .t-go { color: var(--go); } .tally .t-maybe { color: var(--maybe); } .tally .t-skip { color: var(--skip); }
 
 .deck-body { display: grid; gap: 8px; }
+.xfer { display: grid; gap: 6px; font-size: 13px; }
+.xfer textarea { width: 100%; font: 12px var(--font-mono); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
 .deck-top { flex-wrap: nowrap; }
 .btn.now { background: var(--accent); color: var(--surface); font-weight: 600; }
 .btn.now:hover { background: var(--accent); filter: brightness(1.1); }
@@ -170,9 +172,19 @@ h2.day { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.18
       <div class="status-line" id="sync">Picks save in this browser.</div>
       <div class="tools">
         <button class="btn" id="copy" type="button">Copy my schedule</button>
+        <button class="btn" id="exp" type="button">Export picks</button>
+        <button class="btn" id="imp" type="button">Import picks</button>
         <button class="btn" id="dl" type="button" hidden>Download printable</button>
       </div>
     </div>
+    </div>
+    <div class="xfer" id="xfer" hidden>
+      <label for="xfertext" id="xferlabel">Paste exported picks here</label>
+      <textarea id="xfertext" rows="4" spellcheck="false"></textarea>
+      <div class="tools">
+        <button class="btn" id="xfergo" type="button">Import</button>
+        <button class="btn" id="xferclose" type="button">Close</button>
+      </div>
     </div>
   </div>
 
@@ -225,7 +237,7 @@ h2.day { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.18
 
   const store = { get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
                   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
-  let state = store.get('archon49-picks') || {"friends": {"k": ["Ars Arcanum", "Bardic Bros", "Rockabilly Bones"], "p": ["1038", "2588", "2295"]}, "kidsSkipped": true, "picks": {"friday|12-00-pm|how-to-get-the-most-out-of-art-commissions": "maybe", "friday|2-00-pm|autograph-session-with-ray-tabler-george-sirois-brian-katcher": "skip", "friday|2-00-pm|it-s-just-a-step-to-the-left-and-then-a-punch-to-the-right-": "skip", "friday|2-00-pm|make-a-pet-octopus": "maybe", "friday|2-00-pm|making-art-creating-your-own-style": "go", "friday|2-00-pm|reboots-how-to-ruin-the-fun": "skip", "friday|2-00-pm|writing-multiple-genres-together": "go", "friday|2-00-pm|you-re-from-what-time-": "maybe", "friday|3-00-pm|a-conundrum-of-crowns": "maybe", "friday|3-00-pm|cardboard-armor": "skip", "friday|3-00-pm|choosing-a-venue": "skip", "friday|3-00-pm|here-there-be-dragons-scavenger-hunt-": "skip", "friday|3-00-pm|renaissance-style-hair-braiding": "skip", "friday|3-00-pm|starting-on-a-costume": "maybe", "friday|3-00-pm|the-writing-life": "skip", "friday|3-00-pm|unicorns-of-the-world-unite-maker-s-panel-": "maybe", "friday|3-00-pm|working-to-deadlines": "maybe", "friday|4-00-pm|autograph-session-with-mark-tiedemann-jimmy-d-gillentine-richard-moon": "skip", "friday|4-00-pm|beginner-crewel-session-1-": "skip", "friday|4-00-pm|concert-david-phelps": "maybe", "friday|4-00-pm|creativity-vs-marketability": "maybe", "friday|4-00-pm|live-action-duck-hunt": "skip", "friday|4-00-pm|mel-brooks-rocks-": "skip", "friday|4-00-pm|research-rabbit-hole": "maybe", "friday|4-00-pm|sew-you-want-to-make-a-costume": "maybe", "friday|4-00-pm|the-faults-in-our-stars": "skip", "friday|4-00-pm|the-golden-age-of-science-fiction": "skip", "friday|4-00-pm|the-wild-chaotic-future-and-past-of-star-trek-in-the-2020s": "go", "friday|4-30-pm|concert-eric-ray": "go", "friday|5-00-pm|astronomy-before-the-telescope": "maybe", "friday|5-00-pm|autograph-session-with-john-sies-john-hornor-jacobs-angie-fox": "maybe", "friday|5-00-pm|concert-magical-wanderings-with-special-guest-filk-goh-tim-griffin": "go", "friday|5-00-pm|everyone-s-using-ai-so-what-s-ethical-anymore-": "maybe", "friday|5-00-pm|live-action-angry-birds": "skip", "friday|5-00-pm|media-literacy-and-science-fiction": "maybe", "friday|5-00-pm|the-many-faces-of-superman": "skip", "friday|5-30-pm|concert-the-gateway-girls": "maybe", "friday|6-00-pm|opening-ceremonies": "maybe", "friday|6-00-pm|rocket-time-": "skip", "friday|7-00-pm|embracing-fear": "skip", "friday|7-00-pm|legends-in-movies-patrick-stewart-and-ian-mckellan": "maybe", "friday|7-00-pm|outdoor-concert-bardic-bros": "go", "friday|7-00-pm|yes-please-with-monsters-presents-why-should-i-care-about-ice-planet-barbarians-": "go", "friday|8-00-pm|dark-at-the-top-of-the-stairs-screening-and-q-a": "skip", "friday|8-00-pm|hallway-costume-contest": "maybe", "friday|8-00-pm|losing-main-character-energy-": "skip", "friday|8-00-pm|outdoor-concert-rockabilly-bones-and-the-black-spots": "go", "friday|9-00-pm|dance": "maybe", "friday|9-00-pm|open-filking": "maybe", "friday|9-00-pm|red-light-room-karaoke": "go", "friday|9-00-pm|will-ai-replace-editors-": "maybe", "saturday|1-00-pm|art-demo-with-snail-scott": "skip", "saturday|1-00-pm|charity-auction": "skip", "saturday|1-00-pm|dragons-": "maybe", "saturday|1-00-pm|ideas-where-do-they-come-from-": "skip", "saturday|1-00-pm|making-vs-wearing": "maybe", "saturday|1-00-pm|neurodivergent-welcome-home-to-fandom": "maybe", "saturday|1-00-pm|outdoor-concert-ars-arcanum": "go", "saturday|1-00-pm|sex-and-babies-in-space": "skip", "saturday|1-00-pm|teen-s-cosplay-contest": "skip", "saturday|1-00-pm|the-seventh-annual-greater-archon-children-s-costume-extravaganza-trademark-pending-": "skip", "saturday|1-00-pm|the-work-of-artist-guest-of-honor-joy-alyssa-day": "skip", "saturday|1-00-pm|twenty-minutes-into-the-future": "skip", "saturday|10-00-am|-it-must-be-for-ritual-purposes-": "skip", "saturday|10-00-am|autograph-session-1-with-larry-niven": "skip", "saturday|10-00-am|choose-your-fighter-": "skip", "saturday|10-00-am|combining-2d-and-3d-art": "maybe", "saturday|10-00-am|from-litrpg-to-phenomenon-the-rise-of-dungeon-crawler-carl": "go", "saturday|10-00-am|it-s-not-a-mistake-it-s-a-creative-detour": "skip", "saturday|10-00-am|marvel-and-star-wars-on-tv-did-disney-kill-the-golden-goose-": "skip", "saturday|10-00-am|overcoming-stage-fright": "skip", "saturday|10-00-am|roswell-where-it-all-started": "skip", "saturday|10-00-am|temari-balls-make-your-own-japanese-folk-art": "skip", "saturday|10-00-am|writing-prompts-and-inspiration-sources": "maybe", "saturday|10-00-pm|the-rocky-horror-picture-show-annual-screening": "skip", "saturday|11-00-am|are-fan-run-cons-dying-out-": "skip", "saturday|11-00-am|ars-arcanum-load-in-setup": "go", "saturday|11-00-am|artist-talk-in-the-art-show": "skip", "saturday|11-00-am|car-show": "skip", "saturday|11-00-am|creating-skits-for-the-masquerade": "skip", "saturday|11-00-am|dc-s-second-cinematic-universe-attempt": "skip", "saturday|11-00-am|defense-of-earth": "skip", "saturday|11-00-am|duct-tape-armor-and-instant-costuming": "skip", "saturday|11-00-am|how-popular-media-gets-mental-health-wrong": "skip", "saturday|11-00-am|memorable-archon-costumes": "skip", "saturday|11-00-am|teens-scavenger-hunt-ages-13-17-": "skip", "saturday|11-00-am|textile-and-text": "maybe", "saturday|12-00-pm|boffer-sword-making-fighting": "skip", "saturday|12-00-pm|creativity-imagination-and-mental-health-benefits": "skip", "saturday|12-00-pm|de-la-stella-fisse-the-first-celestial-atlas": "skip", "saturday|12-00-pm|disability-representation-in-science-fiction": "maybe", "saturday|12-00-pm|disclosure-day-the-truth-about-ufos": "skip", "saturday|12-00-pm|the-last-frontier": "maybe", "saturday|12-30-pm|ars-arcanum-soundcheck": "go", "saturday|12-30-pm|mandatory-masquerade-meeting": "skip", "saturday|2-00-pm|ai-is-here-to-stay-so-make-it-work-for-you": "maybe", "saturday|2-00-pm|ars-arcanum-load-out": "go", "saturday|2-00-pm|art-jam-": "maybe", "saturday|2-00-pm|avoiding-scams-and-grifts-as-a-new-author": "skip", "saturday|2-00-pm|basic-kumihimo-beginner-japanese-rope-braiding": "skip", "saturday|2-00-pm|closed-for-lunch": "skip", "saturday|2-00-pm|don-t-fear-the-machine": "maybe", "saturday|2-00-pm|fannish-jeopardy-presented-by-filk": "skip", "saturday|2-00-pm|getting-started-as-a-professional-artist": "skip", "saturday|2-00-pm|godzilla-s-cosmic-threat-": "skip", "saturday|2-00-pm|open-speculative-poetry-jam-with-kathy-bailey": "maybe", "saturday|2-00-pm|project-hail-mary-from-novel-to-screen": "skip", "saturday|2-00-pm|the-moon-is-a-harsh-mistress-at-60": "skip", "saturday|3-00-pm|a-history-of-constellations": "skip", "saturday|3-00-pm|beyond-the-ufo-space-aliens-on-the-silver-screen": "skip", "saturday|3-00-pm|build-a-fairy-house": "skip", "saturday|3-00-pm|downsizing-your-treasures": "skip", "saturday|3-00-pm|foul-play-teens-13-17-": "skip", "saturday|3-00-pm|how-to-run-a-masquerade": "skip", "saturday|3-00-pm|marketing-and-promotion-for-sff-authors": "maybe", "saturday|3-00-pm|one-shots": "maybe", "saturday|3-00-pm|the-new-comics-canon-the-most-must-read-new-comic-books-of-2025-2026": "go", "saturday|3-00-pm|why-most-tabletop-role-playing-books-fail": "skip", "saturday|3-30-pm|concert-uncle-fluffy": "maybe", "saturday|4-00-pm|balloon-animal-sculpting": "skip", "saturday|4-00-pm|battle-of-the-beasts-": "skip", "saturday|4-00-pm|battling-imposter-syndrome": "skip", "saturday|4-00-pm|beginner-crewel-session-2-": "skip", "saturday|4-00-pm|filmmaking-in-the-age-of-ai": "maybe", "saturday|4-00-pm|finish-your-book-a-how-to": "skip", "saturday|4-00-pm|how-to-be-a-filmmaker-the-work-of-wyatt-weed": "skip", "saturday|4-00-pm|space-mining-back-to-the-moon": "skip", "saturday|4-30-pm|art-auction": "skip", "saturday|4-30-pm|concert-the-creative-cats": "maybe", "saturday|5-00-pm|archon-s-ninja-warrior": "skip", "saturday|5-00-pm|close-up-magic-with-zi": "skip", "saturday|5-00-pm|concert-filk-goh-tim-griffin": "go", "saturday|5-00-pm|o-neill-cylinder-space-settlements": "skip", "saturday|5-00-pm|starting-a-podcast-and-guesting-on-one": "skip", "saturday|5-00-pm|the-future-of-table-top-gaming": "skip", "saturday|5-00-pm|whispers-from-the-static-analog-technology-as-a-source-of-horror": "maybe", "saturday|5-00-pm|writing-while-neurodivergent": "maybe", "saturday|6-00-pm|be-the-player-every-gm-wants-at-the-table": "skip", "saturday|6-00-pm|developing-an-audio-drama": "maybe", "saturday|6-00-pm|king-of-tokyo-learn-and-play-teens-13-17-": "skip", "saturday|6-00-pm|monsdrawsity-learn-and-play": "skip", "saturday|6-00-pm|saturday-larp": "maybe", "saturday|6-00-pm|steal-this-panel": "skip", "saturday|6-00-pm|that-was-better": "skip", "saturday|6-00-pm|the-business-of-writing": "skip", "saturday|7-00-pm|defying-gravity-wicked-parts-1-2": "maybe", "saturday|7-00-pm|world-building-101": "maybe", "saturday|7-20-pm|masquerade-masquerade-overflow-seating-begins": "maybe", "saturday|8-00-pm|open-filking": "maybe", "saturday|8-00-pm|the-archon-masquerade": "maybe", "saturday|9-00-pm|dance": "maybe", "saturday|9-00-pm|red-light-room-karaoke": "go", "sunday|1-00-pm|-what-s-going-to-happen-to-my-cool-stuff-tips-on-preparing-your-comics-vinyl-and-other-collectibles-for-your-beloved-heirs": "skip", "sunday|1-00-pm|autograph-session-2-with-larry-niven": "skip", "sunday|1-00-pm|gaming-hour": "skip", "sunday|1-00-pm|knowing-is-half-the-battle-": "skip", "sunday|1-00-pm|popcorn-sci-fi-guilty-pleasure-or-great-storytelling-": "maybe", "sunday|1-00-pm|tin-filker-song-contest": "maybe", "sunday|1-00-pm|too-many-cooks-spoil-the-supe": "skip", "sunday|1-00-pm|what-will-the-future-need-from-art-and-artists-": "maybe", "sunday|10-00-am|how-people-speak-using-phonetic-dialog-in-your-work": "maybe", "sunday|10-00-am|masquerade-show-and-tell": "skip", "sunday|10-00-am|plot-vs-theme-vs-subtext": "maybe", "sunday|10-00-am|sock-puppets-": "skip", "sunday|10-00-am|the-life-and-works-of-isaac-asimov": "skip", "sunday|10-00-am|william-shatner-s-tekwar": "skip", "sunday|10-00-am|yule-monsters-the-dark-side-of-holidays": "maybe", "sunday|11-00-am|constructive-criticism-versus-trolling": "skip", "sunday|11-00-am|ghosts-of-the-american-century-horror-in-history-s-wake": "maybe", "sunday|11-00-am|mason-dixon-and-gravity-how-two-surveyors-mapped-the-american-frontier-and-wound-up-weighing-the-earth": "skip", "sunday|11-00-am|non-denominational-worship-service": "skip", "sunday|11-00-am|songwriting-workshop-with-filk-goh-tim-griffin": "go", "sunday|11-00-am|st-louis-costumers-guild-open-meeting": "skip", "sunday|11-00-am|star-trek-then-now": "go", "sunday|11-00-am|storytime-with-jessica": "skip", "sunday|11-00-am|unison-idol-fest": "maybe", "sunday|12-00-pm|forgotten-80s-tv-science-fiction": "skip", "sunday|12-00-pm|honey-i-shrunk-the-art-": "skip", "sunday|12-00-pm|inside-the-world-of-ringworld": "skip", "sunday|12-00-pm|life-as-a-pro-artist": "skip", "sunday|12-00-pm|rebooting-the-st-louis-science-fiction-society": "skip", "sunday|12-00-pm|short-and-sharp-the-horror-of-the-story-collection": "maybe", "sunday|12-00-pm|stl-whovians-open-club-meeting": "maybe", "sunday|12-00-pm|teaching-core-curriculum-through-music": "maybe", "sunday|12-00-pm|the-heirs-of-dr-demento": "maybe", "sunday|2-00-pm|dead-dog-open-filk": "maybe", "sunday|2-00-pm|space-farming-the-undiscovered-country": "skip", "sunday|2-00-pm|welcoming-younger-fen-into-the-fold": "maybe", "sunday|3-00-pm|closing-ceremonies": "maybe"}, "seeded": ["friday|9-00-pm|red-light-room-karaoke", "saturday|9-00-pm|red-light-room-karaoke", "saturday|11-00-am|ars-arcanum-load-in-setup", "saturday|12-30-pm|ars-arcanum-soundcheck", "saturday|2-00-pm|ars-arcanum-load-out"], "updatedAt": 1790958227487};
+  let state = store.get('archon49-picks') || { picks: {}, updatedAt: 0 };
   function skipKidsTrack() {
     if (state.kidsSkipped) return false;
     EVENTS.filter(e => e.kids).forEach(e => { state.picks[e.key] = 'skip'; });
@@ -233,10 +245,9 @@ h2.day { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.18
     store.set('archon49-picks', state);
     return true;
   }
-  skipKidsTrack();
-  const FRIEND_SEED = { p: ['1038', '2588', '2295'], k: ['Ars Arcanum', 'Bardic Bros', 'Rockabilly Bones', 'Magical Wanderings', 'Magic Mark', 'Eric Ray', 'Cheryl Schaefer', 'Steve Atteberry', 'Derek Henson', 'Jason Myers'] };
+  const FRIEND_SEED = { p: [], k: [] };
   if (!state.friends) { state.friends = { p: FRIEND_SEED.p.slice(), k: [] }; state.updatedAt = Date.now(); store.set('archon49-picks', state); }
-  const SEED_GO = ["friday|9-00-pm|red-light-room-karaoke", "saturday|9-00-pm|red-light-room-karaoke", "saturday|11-00-am|ars-arcanum-load-in-setup", "saturday|12-30-pm|ars-arcanum-soundcheck", "saturday|2-00-pm|ars-arcanum-load-out"];
+  const SEED_GO = [];
   function seedPicks() {
     const done = state.seeded || [];
     const todo = SEED_GO.filter(k => !done.includes(k));
@@ -250,7 +261,7 @@ h2.day { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.18
   const isFriend = p => state.friends.p.includes(p);
   const friendsOn = e => [
     ...e.ppl.filter(([p]) => isFriend(p)).map(([p]) => PEOPLE[p].n),
-    ...FRIEND_SEED.k.filter(k => (e.title + ' ' + e.panelists + ' ' + (e.extra || '')).toLowerCase().includes(k.toLowerCase())),
+    ...[...new Set([...FRIEND_SEED.k, ...(state.friends.k || [])])].filter(k => (e.title + ' ' + e.panelists + ' ' + (e.extra || '')).toLowerCase().includes(k.toLowerCase())),
   ];
   const ui = Object.assign({ day: 'All', view: 'All', q: '', cat: '', kids: false, compact: false, who: 'open' }, store.get('archon49-ui') || {});
 
@@ -434,6 +445,36 @@ tr.mb td{color:#555}small{color:#555}@media print{tr{break-inside:avoid}}</style
 <h1>Archon 49 - My Schedule</h1><table>${rows}</table></body></html>`;
   }
   const syncEl = document.getElementById('sync');
+  const xfer = document.getElementById('xfer'), xt = document.getElementById('xfertext'),
+        xl = document.getElementById('xferlabel'), xgo = document.getElementById('xfergo');
+  function showXfer(mode, text) {
+    xfer.hidden = false; xt.value = text || ''; xgo.hidden = mode !== 'import';
+    xl.textContent = mode === 'import' ? 'Paste exported picks here, then tap Import. This replaces the picks on this device.'
+                                       : 'Your picks. Copy all of this and send it to yourself.';
+    deck.classList.add('open'); setDeckH();
+    if (mode === 'import') xt.focus(); else xt.select();
+  }
+  document.getElementById('xferclose').onclick = () => { xfer.hidden = true; setDeckH(); };
+  document.getElementById('exp').onclick = () => {
+    const text = 'ARCHON49:' + JSON.stringify({ v: 1, picks: state.picks,
+      friends: { p: state.friends.p, k: [...new Set([...FRIEND_SEED.k, ...(state.friends.k || [])])] } });
+    navigator.clipboard.writeText(text)
+      .then(() => { syncEl.textContent = 'Picks copied. Send them to yourself, then use Import picks on the other device.'; xfer.hidden = true; setDeckH(); })
+      .catch(() => showXfer('export', text));
+  };
+  document.getElementById('imp').onclick = () => showXfer('import');
+  xgo.onclick = () => {
+    let d;
+    try { d = JSON.parse(xt.value.trim().replace(/^ARCHON49:/, '')); } catch { d = null; }
+    if (!d || typeof d.picks !== 'object') { xl.textContent = "That doesn't look like exported picks. Copy the whole text, starting with ARCHON49:"; return; }
+    const picks = {};
+    Object.entries(d.picks).forEach(([k, v]) => { if (byKey[k] && ['go', 'maybe', 'skip'].includes(v)) picks[k] = v; });
+    state = { picks, updatedAt: Date.now(), kidsSkipped: true, seeded: SEED_GO.slice(),
+      friends: { p: (d.friends?.p || []).filter(p => PEOPLE[p]), k: (d.friends?.k || []).filter(k => typeof k === 'string') } };
+    store.set('archon49-picks', state); queueSave();
+    xfer.hidden = true; render();
+    syncEl.textContent = `Imported ${Object.keys(picks).length} picks.`;
+  };
   document.getElementById('copy').onclick = () => {
     if (!myList().length) { syncEl.textContent = 'Mark some events Going or Maybe first.'; return; }
     const text = asText();
