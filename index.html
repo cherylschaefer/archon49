@@ -352,7 +352,21 @@ h2.day { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.18
     </article>`;
   }
 
-  function render() {
+  // Slots the viewer just sorted keep their order until they scroll out of view.
+  const frozen = new Map();
+  let io = null;
+  function watchFrozen() {
+    if (io) io.disconnect();
+    if (!frozen.size || !('IntersectionObserver' in window)) return;
+    io = new IntersectionObserver(entries => {
+      let changed = false;
+      entries.forEach(en => { if (!en.isIntersecting && frozen.has(en.target.id)) { frozen.delete(en.target.id); changed = true; } });
+      if (changed) render(true);
+    });
+    frozen.forEach((_, id) => { const el = document.getElementById(id); el ? io.observe(el) : frozen.delete(id); });
+  }
+  function render(keep) {
+    if (!keep) frozen.clear();
     store.set('archon49-ui', ui);
     seg(document.getElementById('days'), [['All','All'], ...DAYS.map(d => [d, d.slice(0,3)])], ui.day, v => { ui.day = v; render(); });
     seg(document.getElementById('views'), VIEWS, ui.view, v => { ui.view = v; render(); });
@@ -369,7 +383,12 @@ h2.day { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.18
     requestAnimationFrame(setDeckH);
     document.getElementById('list').classList.toggle('compact', ui.compact);
 
-    const RANK = { go: 0, maybe: 1, skip: 3 }, rank = e => RANK[state.picks[e.key]] ?? 2;
+    const RANK = { go: 0, maybe: 1, skip: 3 };
+    const rank = e => {
+      const fz = frozen.get(`slot-${e.day}-${e.m}`);
+      if (fz) { const i = fz.indexOf(e.key); return i < 0 ? 99 : i; }
+      return RANK[state.picks[e.key]] ?? 2;
+    };
     const shown = EVENTS.filter(matches)
       .sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.m - b.m || rank(a) - rank(b));
     let html = '', day = null, slot = null;
@@ -380,6 +399,7 @@ h2.day { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.18
     }
     if (slot) html += '</div></section>';
     document.getElementById('list').innerHTML = html || `<div class="empty">Nothing matches these filters.</div>`;
+    watchFrozen();
 
     const n = { go: 0, maybe: 0, skip: 0 };
     Object.entries(state.picks).forEach(([k, v]) => { if (byKey[k] && n[v] !== undefined) n[v]++; });
@@ -393,7 +413,7 @@ h2.day { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.18
     if (fb) {
       const p = fb.dataset.friend, f = state.friends;
       f.p = isFriend(p) ? f.p.filter(x => x !== p) : [...f.p, p];
-      state.updatedAt = Date.now(); store.set('archon49-picks', state); queueSave(); render();
+      state.updatedAt = Date.now(); store.set('archon49-picks', state); queueSave(); render(true);
       return;
     }
     const pn = ev.target.closest('.pname');
@@ -401,19 +421,21 @@ h2.day { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.18
       const k = pn.closest('.ev').dataset.k + '|' + pn.dataset.p;
       open.has(k) ? open.delete(k) : open.add(k);
       const y = pn.getBoundingClientRect().top;
-      render();
+      render(true);
       const nb = document.querySelector(`.ev[data-k="${k.split('|').slice(0, -1).join('|')}"] .pname[data-p="${pn.dataset.p}"]`);
       if (nb) { window.scrollBy(0, nb.getBoundingClientRect().top - y); nb.focus({ preventScroll: true }); }
       return;
     }
     const b = ev.target.closest('.picks button'); if (!b) return;
     const k = b.closest('.ev').dataset.k, v = b.dataset.v;
+    const slotEl = b.closest('.slot');
+    if (slotEl && !frozen.has(slotEl.id)) frozen.set(slotEl.id, [...slotEl.querySelectorAll('.ev')].map(x => x.dataset.k));
     if (state.picks[k] === v) delete state.picks[k]; else state.picks[k] = v;
     state.updatedAt = Date.now();
     store.set('archon49-picks', state);
     queueSave();
     const y = b.getBoundingClientRect().top;
-    render();
+    render(true);
     const nb = document.querySelector(`.ev[data-k="${k}"] .picks button[data-v="${v}"]`);
     if (nb) { window.scrollBy(0, nb.getBoundingClientRect().top - y); nb.focus({ preventScroll: true }); }
   });
