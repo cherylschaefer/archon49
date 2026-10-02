@@ -268,6 +268,13 @@ h2.day { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.18
     return true;
   }
   seedPicks();
+  const FRIEND_DEFAULTS = ["1038"];
+  (() => {
+    const done = state.friendSeeded || [], add = FRIEND_DEFAULTS.filter(p => !done.includes(p));
+    if (!add.length) return;
+    add.forEach(p => { if (!state.friends.p.includes(p)) state.friends.p.push(p); });
+    state.friendSeeded = [...done, ...add]; store.set('archon49-picks', state);
+  })();
   const isFriend = p => state.friends.p.includes(p);
   const friendsOn = e => [
     ...e.ppl.filter(([p]) => isFriend(p)).map(([p]) => PEOPLE[p].n),
@@ -519,7 +526,7 @@ tr.mb td{color:#555}small{color:#555}@media print{tr{break-inside:avoid}}</style
     if (!d || typeof d.picks !== 'object') { xl.textContent = "That doesn't look like exported picks. Copy the whole text, starting with ARCHON49:"; return; }
     const picks = {};
     Object.entries(d.picks).forEach(([k, v]) => { if (byKey[k] && ['go', 'maybe', 'skip'].includes(v)) picks[k] = v; });
-    state = { picks, updatedAt: Date.now(), kidsSkipped: true, seeded: SEED_GO.slice(),
+    state = { picks, updatedAt: Date.now(), kidsSkipped: true, seeded: SEED_GO.slice(), friendSeeded: FRIEND_DEFAULTS.slice(),
       friends: { p: (d.friends?.p || []).filter(p => PEOPLE[p]), k: (d.friends?.k || []).filter(k => typeof k === 'string') } };
     store.set('archon49-picks', state); queueSave();
     xfer.hidden = true; render();
