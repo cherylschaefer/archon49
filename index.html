@@ -369,7 +369,9 @@ h2.day { font-family: var(--font-display); font-size: 15px; letter-spacing: 0.18
     requestAnimationFrame(setDeckH);
     document.getElementById('list').classList.toggle('compact', ui.compact);
 
-    const shown = EVENTS.filter(matches);
+    const RANK = { go: 0, maybe: 1, skip: 3 }, rank = e => RANK[state.picks[e.key]] ?? 2;
+    const shown = EVENTS.filter(matches)
+      .sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.m - b.m || rank(a) - rank(b));
     let html = '', day = null, slot = null;
     for (const e of shown) {
       if (e.day !== day) { if (slot) html += '</div></section>'; slot = null; day = e.day; html += `<h2 class="day">${day}</h2>`; }
