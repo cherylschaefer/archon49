@@ -569,12 +569,15 @@ tr.mb td{color:#555}small{color:#555}@media print{tr{break-inside:avoid}}</style
       .formatToParts(new Date()).map(x => [x.type, x.value]));
     return { date: `${p.year}-${p.month}-${p.day}`, m: +p.hour * 60 + +p.minute };
   }
+  // A slot still counts as "now" this many minutes after it starts; after that, jump to what's next.
+  const NOW_GRACE = 15;
+  const clock = m => `${(Math.floor(m / 60) % 12) || 12}:${String(m % 60).padStart(2, '0')} ${Math.floor(m / 60) % 24 < 12 ? 'AM' : 'PM'}`;
   const nowMsg = document.getElementById('nowmsg');
   document.getElementById('now').onclick = () => {
     const t = centralNow();
-    let day = CON_DATES[t.date], m = t.m - 59;
+    let day = CON_DATES[t.date], m = t.m - NOW_GRACE;
     if (!day && t.m < 300 && CON_DATES[new Date(Date.parse(t.date) - 864e5).toISOString().slice(0, 10)]) {
-      day = CON_DATES[new Date(Date.parse(t.date) - 864e5).toISOString().slice(0, 10)]; m = t.m + 24 * 60 - 59;
+      day = CON_DATES[new Date(Date.parse(t.date) - 864e5).toISOString().slice(0, 10)]; m = t.m + 24 * 60 - NOW_GRACE;
     }
     let note = '';
     if (!day) {
@@ -585,7 +588,8 @@ tr.mb td{color:#555}small{color:#555}@media print{tr{break-inside:avoid}}</style
     const slots = [...document.querySelectorAll(`.slot[data-day="${day}"]`)];
     const target = slots.find(el => +el.dataset.m >= m);
     if (!target) { nowMsg.textContent = `Nothing left ${day} in this view.`; return; }
-    nowMsg.textContent = note;
+    const tm = +target.dataset.m;
+    nowMsg.textContent = note || `It's ${clock(t.m)}. ${tm <= (day === CON_DATES[t.date] ? t.m : t.m + 1440) ? 'Showing what started at' : 'Next up at'} ${clock(tm % 1440)}.`;
     deck.classList.remove('open'); ft.setAttribute('aria-expanded', 'false'); setDeckH();
     requestAnimationFrame(() => {
       target.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
